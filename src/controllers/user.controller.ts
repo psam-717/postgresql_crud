@@ -113,3 +113,29 @@ export const login = async(req: ValidatedRequest<typeof loginSchema>, res: Respo
         return
     }
 } 
+
+
+export const profileData = async(req: Request, res: Response): Promise<void> => {
+    try {
+        const existingUser = await prisma.customer.findUnique({
+            where: {
+                id: (req as any).user.id
+            }
+        })
+        
+        if(!existingUser){
+            res.status(404).json({error: 'User not found'});
+            return;
+        }
+
+        const {password: _, ...userWithoutPassword} = existingUser;
+        res.status(200).json({
+            message: 'Profile retrieved',
+            user: userWithoutPassword
+        })
+    } catch (error) {
+        console.log('Error caused by ', (error as Error).stack);
+        res.status(500).json({error: 'Internal server error while retrieving profile'});
+        return;
+    }
+}
